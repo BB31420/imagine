@@ -1,6 +1,5 @@
-# OpenAI Image Generation Wrapper, BB31420, Date: 1/13/24
-# Upgrades to write - progress bar for image gen?, prompt saving and load prompts for different style images. Image inpainting/mask maker
-
+# OpenAI Image Generation Wrapper, Made by: BB31420, Date: 1/13/24
+# Upgrades: progress bar for image gen needs a thread, prompt saving and load prompts for different style images. Image inpainting/mask maker, dry out code
 import tkinter as tk
 import tkinter.messagebox
 import customtkinter
@@ -9,6 +8,7 @@ import requests
 import os
 import datetime
 import tkinter.filedialog
+from switch_data import SWITCH_DATA
 
 
 class App(customtkinter.CTk):
@@ -17,7 +17,6 @@ class App(customtkinter.CTk):
 
         self.file_path = None  # Initialize file_path attribute to None
         self.file_path2 = None  # Initialize file_path attribute to None
-
 
         # Initialize OpenAI client with API key from file
         self.api_key_file = "openai_api_key.txt"
@@ -29,7 +28,7 @@ class App(customtkinter.CTk):
    
         # Configure window
         self.title("DALL-E API Interface")
-        self.geometry(f"{800}x{580}")
+        self.geometry(f"{900}x{680}")
 
         # Configure grid layout
         self.grid_columnconfigure(1, weight=1)
@@ -37,39 +36,37 @@ class App(customtkinter.CTk):
         self.grid_rowconfigure((0, 1, 2), weight=1)
 
         # Create sidebar frame
-        self.sidebar_frame = customtkinter.CTkFrame(self, width=140, corner_radius=0)
-        self.sidebar_frame.grid(row=0, column=0, rowspan=4, sticky="nsew")
-
+        self.sidebar_frame = customtkinter.CTkFrame(self, width=40, corner_radius=0)
+        self.sidebar_frame.grid(row=0, column=0, rowspan=5, sticky="snew")
 
         # Logo label
         self.logo_label = customtkinter.CTkLabel(self.sidebar_frame, text="Configure", font=customtkinter.CTkFont(size=20, weight="bold"))
         self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
+        
         # Get OpenAI Key 
         self.string_input_button = customtkinter.CTkButton(self.sidebar_frame, text="Setup API Key",
                                                            command=self.open_input_dialog_event)
         self.string_input_button.grid(row=1, column=0, padx=20, pady=(10, 10))
 
-
         # Prompt entry
-        self.prompt_entry = customtkinter.CTkTextbox(self, width=30, wrap="word") # Make Text box
-        self.prompt_entry.grid(row=0, column=1, padx=(20, 0), pady=(20, 0), sticky="nsew")
+        self.prompt_entry = customtkinter.CTkTextbox(self, width=100, wrap="word") # Make Text box
+        self.prompt_entry.grid(row=0, column=1, padx=(20, 0), pady=(20, 0), sticky="snew")
+        # Set default values
+        self.prompt_entry.insert("0.0", "Vector logo design of a Greek statue, minimalistic, with a white background")
         
         # create tabview
-        self.tabview = customtkinter.CTkTabview(self, width=250)
-        self.tabview.grid(row=0, column=4, padx=(20, 0), pady=(20, 0), sticky="nsew")
+        self.tabview = customtkinter.CTkTabview(self, height=100, width=250)
+        self.tabview.grid(row=0, column=4, padx=(20, 0), pady=(20, 0), sticky="snew")
         self.tabview.add("DALL·E 3")
         self.tabview.add("DALL·E 2")
         self.tabview.tab("DALL·E 3").grid_columnconfigure(0, weight=1)  # configure grid of individual tabs
         self.tabview.tab("DALL·E 2").grid_columnconfigure(0, weight=1)
         self.tabview.add("DALL·E 2 Variation")
         self.tabview.add("DALL·E 2 Edit")
-        self.tabview.tab("DALL·E 2 Variation").grid_columnconfigure(0, weight=1)  # configure grid of individual tabs
+        self.tabview.tab("DALL·E 2 Variation").grid_columnconfigure(0, weight=1)  
         self.tabview.tab("DALL·E 2 Edit").grid_columnconfigure(0, weight=1)
 
-
-        
         # Dall e 3 Image Gen Tab
-        
         # Resolution
         self.label_tab_1 = customtkinter.CTkLabel(self.tabview.tab("DALL·E 3"), text="Size")
         self.label_tab_1.grid(row=0, column=0, padx=0, pady=0)
@@ -94,16 +91,13 @@ class App(customtkinter.CTk):
                                                         values=["natural", "vivid"])
         self.optionmenu_3.grid(row=5, column=0, padx=0, pady=(0, 0))
 
-
         # Generate Dalle3 Image Button
         self.string_input_button = customtkinter.CTkButton(self.tabview.tab("DALL·E 3"), text="Generate Image",
                                                            command=self.generate_image_dalle3)
-        self.string_input_button.grid(row=7, column=0, padx=20, pady=(40, 10))
-
+        self.string_input_button.grid(row=7, column=0, padx=20, pady=(20, 0))
 
 
         # Dall e 2 Image Gen Tab
-
         # Resolution
         self.label_tab_11 = customtkinter.CTkLabel(self.tabview.tab("DALL·E 2"), text="Size")
         self.label_tab_11.grid(row=0, column=0, padx=0, pady=0)
@@ -124,12 +118,10 @@ class App(customtkinter.CTk):
         # Generate Dalle2 Image Button
         self.string_input_button = customtkinter.CTkButton(self.tabview.tab("DALL·E 2"), text="Generate Image",
                                                            command=self.generate_image_dalle2)
-        self.string_input_button.grid(row=8, column=0, padx=20, pady=(40, 10))
-
+        self.string_input_button.grid(row=8, column=0, padx=20, pady=(20, 0))
 
 
         # Dall e 2 Variations Tab
-
         # Resolution
         self.label_tab_111 = customtkinter.CTkLabel(self.tabview.tab("DALL·E 2 Variation"), text="Size")
         self.label_tab_111.grid(row=0, column=0, padx=0, pady=0)
@@ -151,16 +143,13 @@ class App(customtkinter.CTk):
                                                   command=self.select_file_dialog)
         self.select_file_button.grid(row=4, column=0, padx=20, pady=(10, 0))
 
-        
         # Generate Dalle2 Image Button
         self.string_input_button = customtkinter.CTkButton(self.tabview.tab("DALL·E 2 Variation"), text="Generate Image",
                                                            command=self.generate_image_dalle2_variation)
-        self.string_input_button.grid(row=8, column=0, padx=20, pady=(40, 10))
+        self.string_input_button.grid(row=8, column=0, padx=20, pady=(20, 0))
         
 
-
         # Dall e 2 Mask Edit Tab
-
         # Resolution
         self.label_tab_1111 = customtkinter.CTkLabel(self.tabview.tab("DALL·E 2 Edit"), text="Size")
         self.label_tab_1111.grid(row=0, column=0, padx=0, pady=0)
@@ -185,19 +174,62 @@ class App(customtkinter.CTk):
         # Upload Image Mask 
         self.select_file_button = customtkinter.CTkButton(self.tabview.tab("DALL·E 2 Edit"), text="Select Mask File",
                                                   command=self.select_file_dialog2)
-        self.select_file_button.grid(row=5, column=0, padx=20, pady=(10, 0))
-
+        self.select_file_button.grid(row=5, column=0, padx=20, pady=(5, 0))
         
         # Generate Dalle2 Image Button
         self.string_input_button = customtkinter.CTkButton(self.tabview.tab("DALL·E 2 Edit"), text="Generate Image",
                                                            command=self.generate_image_dalle2_edit)
-        self.string_input_button.grid(row=8, column=0, padx=20, pady=(40, 10))
-
-
-        # Set default values
-        self.prompt_entry.insert("0.0", "Vector logo design of a Greek statue, minimalistic, with a white background")
+        self.string_input_button.grid(row=8, column=0, padx=20, pady=(10, 0))
     
     
+        # create scrollable frame from prompt injection
+        self.scrollable_frame = customtkinter.CTkScrollableFrame(self, label_text="Prompt Injector")
+        self.scrollable_frame.grid(row=1, column=1, padx=(20, 0), pady=(20, 0), sticky="snew")
+        self.scrollable_frame.grid_columnconfigure(0, weight=1)
+        self.scrollable_frame_switches = []
+           
+
+        for i, switch_info in enumerate(SWITCH_DATA):
+            switch_var = tk.BooleanVar()  # Create a BooleanVar to track the switch state
+            switch = customtkinter.CTkSwitch(master=self.scrollable_frame, text=switch_info["name"], variable=switch_var)
+            switch.grid(row=i, column=0, padx=10, pady=(0, 20))
+            self.scrollable_frame_switches.append({"switch": switch, "var": switch_var})
+
+            # Bind functions to switches using a lambda function with a default argument
+            switch.bind("<ButtonRelease-1>", lambda event, index=i, text=switch_info["text"]: self.switch_pressed(index, text))
+
+        
+        # create prompt save/delete entry field and button
+        self.entry = customtkinter.CTkEntry(self, placeholder_text="Prompt name")
+        self.entry.grid(row=4, column=1, columnspan=1, padx=(20, 0), pady=(0, 0), sticky="nsew")
+
+        self.main_button_1 = customtkinter.CTkButton(master=self, fg_color="transparent", border_width=2, text="Save", text_color=("gray10", "#DCE4EE"),
+                                                     command=self.save_input_dialog_event)
+        self.main_button_1.grid(row=4, column=4, padx=(20, 20), pady=(0, 0), sticky="nsew")
+
+        self.main_button_2 = customtkinter.CTkButton(master=self, fg_color="transparent", border_width=2, text="Delete", text_color=("gray10", "#DCE4EE"),
+                                                     command=self.delete_input_dialog_event)
+        self.main_button_2.grid(row=5, column=4, padx=(20, 20), pady=(5, 0), sticky="nsew")
+
+# Functions
+
+    def switch_pressed(self, index, text_to_modify):
+        # Get the current text in the prompt entry
+        current_text = self.prompt_entry.get("1.0", tk.END).strip()
+
+        # Check the switch state
+        switch_state = self.scrollable_frame_switches[index]["var"].get()
+
+        # Example: Modify the text based on the switch state
+        if switch_state:
+            modified_text = current_text + f"\n{text_to_modify}"
+        else:
+            modified_text = current_text.replace(text_to_modify, "")
+
+        # Update the prompt entry with the modified text
+        self.prompt_entry.delete("1.0", tk.END)
+        self.prompt_entry.insert("1.0", modified_text)
+
 
     def generate_image_dalle3(self):
         # Get values from input fields
@@ -251,7 +283,6 @@ class App(customtkinter.CTk):
         except Exception as e:
             self.image_url_label.configure(text=f"Error generating image: {e}")
     
-
 
     def generate_image_dalle2(self):
         # Get values from input fields
@@ -308,7 +339,6 @@ class App(customtkinter.CTk):
             self.image_url_label.configure(text=f"Error generating images: {e}")
 
 
-
     def generate_image_dalle2_variation(self):
         # Get values from input fields
         size_value = self.optionmenu_111.get()
@@ -362,7 +392,6 @@ class App(customtkinter.CTk):
 
         except Exception as e:
             self.image_url_label.configure(text=f"Error generating images: {e}")
-
 
 
     def generate_image_dalle2_edit(self):
@@ -424,19 +453,19 @@ class App(customtkinter.CTk):
             self.image_url_label.configure(text=f"Error generating images: {e}")        
 
 
-
     def initialize_openai_client(self):
         # Check if the API key file exists
         if os.path.exists(self.api_key_file):
+            
             with open(self.api_key_file, "r") as f:
                 api_key = f.read().strip()
+                
                 if api_key:
-                    return OpenAI(api_key=api_key)
-        
+                    return OpenAI(api_key=api_key)       
         # If file doesn't exist or API key is not valid, return None
         return None    
 
-
+    # Save API key input
     def open_input_dialog_event(self):
         dialog = customtkinter.CTkInputDialog(text="Type in OpenAi API key:", title="Save OpenAi API Key")
         api_key = dialog.get_input()
@@ -446,18 +475,61 @@ class App(customtkinter.CTk):
             with open(self.api_key_file, "w") as f:
                 f.write(api_key)
 
+    # Save new prompt
+    def save_input_dialog_event(self):
+        if self.entry.get():
+            new_switch = {"name": self.entry.get(), "text": self.prompt_entry.get("1.0", tk.END).strip()}
+            SWITCH_DATA.append(new_switch)
+            self.save_switch_data_to_file()
+
+    # Delete a prompt
+    def delete_input_dialog_event(self):
+        for switch in SWITCH_DATA:
+            if switch["name"] == self.entry.get():
+                SWITCH_DATA.remove(switch)
+                self.save_switch_data_to_file()
+                break
+    
+    # Reload data from switch_data.py
+    def reload_switch_data(self):
+        try:
+            # Update UI elements based on the new data if needed
+            # create scrollable frame from prompt injection
+            self.scrollable_frame = customtkinter.CTkScrollableFrame(self, label_text="Prompt Injector")
+            self.scrollable_frame.grid(row=1, column=1, padx=(20, 0), pady=(20, 0), sticky="snew")
+            self.scrollable_frame.grid_columnconfigure(0, weight=1)
+            self.scrollable_frame_switches = []
+            for i, switch_info in enumerate(SWITCH_DATA):
+                switch_var = tk.BooleanVar()  # Create a BooleanVar to track the switch state
+                switch = customtkinter.CTkSwitch(master=self.scrollable_frame, text=switch_info["name"], variable=switch_var)
+                switch.grid(row=i, column=0, padx=10, pady=(0, 20))
+                self.scrollable_frame_switches.append({"switch": switch, "var": switch_var})
+
+                # Bind functions to switches using a lambda function with a default argument
+                switch.bind("<ButtonRelease-1>", lambda event, index=i, text=switch_info["text"]: self.switch_pressed(index, text))
+        except ImportError:
+            # Handle the case when the switch_data.py file is not found
+            print("Error loading switch data: switch_data.py not found")
+    
+    # Save SWITCH_DATA to switch_data.py
+    def save_switch_data_to_file(self):
+        with open("switch_data.py", "w") as file:
+            file.write("# Store\nSWITCH_DATA = " + repr(SWITCH_DATA))
+            self.reload_switch_data()
+
 
     def select_file_dialog(self):
         self.file_path = tkinter.filedialog.askopenfilename(title="Select an Image File")
         if self.file_path:
             print(f"Selected file: {self.file_path}")
 
+
     def select_file_dialog2(self):
         self.file_path2 = tkinter.filedialog.askopenfilename(title="Select an Image File")
         if self.file_path2:
             print(f"Selected file: {self.file_path2}")
 
-        
+
 
 if __name__ == "__main__":
     app = App()
