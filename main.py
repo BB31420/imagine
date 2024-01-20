@@ -23,8 +23,8 @@ class App(customtkinter.CTk):
         self.client = self.initialize_openai_client()
 
         # Create a label to display image URLs or errors
-        self.image_url_label = customtkinter.CTkLabel(self, text="", font=("Arial", 12))
-        self.image_url_label.grid(row=7, column=0, padx=20, pady=(20, 10))
+        self.image_url_label = customtkinter.CTkLabel(self, text="", font=("Arial", 10), wraplength=360)
+        self.image_url_label.grid(row=5, column=1, padx=0, pady=(0, 0))
    
         # Configure window
         self.title("DALL-E API Interface")
@@ -44,9 +44,9 @@ class App(customtkinter.CTk):
         self.logo_label.grid(row=0, column=0, padx=20, pady=(20, 10))
         
         # Get OpenAI Key 
-        self.string_input_button = customtkinter.CTkButton(self.sidebar_frame, text="Setup API Key",
+        self.string_input_button0 = customtkinter.CTkButton(self.sidebar_frame, text="Setup API Key",
                                                            command=self.open_input_dialog_event)
-        self.string_input_button.grid(row=1, column=0, padx=20, pady=(10, 10))
+        self.string_input_button0.grid(row=1, column=0, padx=20, pady=(10, 10))
 
         # Prompt entry
         self.prompt_entry = customtkinter.CTkTextbox(self, width=100, wrap="word") # Make Text box
@@ -92,9 +92,9 @@ class App(customtkinter.CTk):
         self.optionmenu_3.grid(row=5, column=0, padx=0, pady=(0, 0))
 
         # Generate Dalle3 Image Button
-        self.string_input_button = customtkinter.CTkButton(self.tabview.tab("DALL·E 3"), text="Generate Image",
+        self.string_input_button1 = customtkinter.CTkButton(self.tabview.tab("DALL·E 3"), text="Generate Image",
                                                            command=self.generate_image_dalle3)
-        self.string_input_button.grid(row=7, column=0, padx=20, pady=(20, 0))
+        self.string_input_button1.grid(row=7, column=0, padx=20, pady=(20, 0))
 
 
         # Dall e 2 Image Gen Tab
@@ -116,9 +116,9 @@ class App(customtkinter.CTk):
 
         
         # Generate Dalle2 Image Button
-        self.string_input_button = customtkinter.CTkButton(self.tabview.tab("DALL·E 2"), text="Generate Image",
+        self.string_input_button2 = customtkinter.CTkButton(self.tabview.tab("DALL·E 2"), text="Generate Image",
                                                            command=self.generate_image_dalle2)
-        self.string_input_button.grid(row=8, column=0, padx=20, pady=(20, 0))
+        self.string_input_button2.grid(row=8, column=0, padx=20, pady=(20, 0))
 
 
         # Dall e 2 Variations Tab
@@ -144,9 +144,9 @@ class App(customtkinter.CTk):
         self.select_file_button.grid(row=4, column=0, padx=20, pady=(10, 0))
 
         # Generate Dalle2 Image Button
-        self.string_input_button = customtkinter.CTkButton(self.tabview.tab("DALL·E 2 Variation"), text="Generate Image",
+        self.string_input_button3 = customtkinter.CTkButton(self.tabview.tab("DALL·E 2 Variation"), text="Generate Image",
                                                            command=self.generate_image_dalle2_variation)
-        self.string_input_button.grid(row=8, column=0, padx=20, pady=(20, 0))
+        self.string_input_button3.grid(row=8, column=0, padx=20, pady=(20, 0))
         
 
         # Dall e 2 Mask Edit Tab
@@ -177,9 +177,9 @@ class App(customtkinter.CTk):
         self.select_file_button.grid(row=5, column=0, padx=20, pady=(5, 0))
         
         # Generate Dalle2 Image Button
-        self.string_input_button = customtkinter.CTkButton(self.tabview.tab("DALL·E 2 Edit"), text="Generate Image",
+        self.string_input_button4 = customtkinter.CTkButton(self.tabview.tab("DALL·E 2 Edit"), text="Generate Image",
                                                            command=self.generate_image_dalle2_edit)
-        self.string_input_button.grid(row=8, column=0, padx=20, pady=(10, 0))
+        self.string_input_button4.grid(row=8, column=0, padx=20, pady=(10, 0))
     
     
         # create scrollable frame from prompt injection
