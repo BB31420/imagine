@@ -1,3 +1,4 @@
+![app](https://i.imgur.com/aFG8wYW.png)
 ### Requires Python 3+ 
 1. Download or clone the repository
 2. Navigate to the project folder in the terminal:
