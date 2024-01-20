@@ -9,6 +9,7 @@ import os
 import datetime
 import tkinter.filedialog
 from switch_data import SWITCH_DATA
+from PIL import Image, ImageTk, ImageDraw
 
 
 class App(customtkinter.CTk):
@@ -47,6 +48,11 @@ class App(customtkinter.CTk):
         self.string_input_button0 = customtkinter.CTkButton(self.sidebar_frame, text="Setup API Key",
                                                            command=self.open_input_dialog_event)
         self.string_input_button0.grid(row=1, column=0, padx=20, pady=(10, 10))
+
+        # Mask an image 
+        self.string_input_button00 = customtkinter.CTkButton(self.sidebar_frame, text="Mask Image",
+                                                           command=self.open_image_editor_window)
+        self.string_input_button00.grid(row=2, column=0, padx=20, pady=(10, 10))
 
         # Prompt entry
         self.prompt_entry = customtkinter.CTkTextbox(self, width=100, wrap="word") # Make Text box
@@ -529,6 +535,80 @@ class App(customtkinter.CTk):
         if self.file_path2:
             print(f"Selected file: {self.file_path2}")
 
+    # Open mask image window
+    def open_image_editor_window(self):
+        image_editor_window = tk.Toplevel(self)
+        image_editor_window.title("Image Editor")
+
+        # Initialize the ImageEditor class
+        image_editor = ImageEditor(image_editor_window)
+
+class ImageEditor:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Image Editor")
+
+        self.canvas = tk.Canvas(root, cursor="cross")
+        self.canvas.pack(expand=tk.YES, fill=tk.BOTH)
+        
+        self.image_path = None
+        self.image = None
+        self.photo = None
+        self.draw = None
+        self.transparency_positions = []  # List to store transparency positions
+
+        menu_bar = tk.Menu(root)
+        root.config(menu=menu_bar)
+
+        file_menu = tk.Menu(menu_bar, tearoff=0)
+        menu_bar.add_cascade(label="File", menu=file_menu)
+        file_menu.add_command(label="Open Image", command=self.open_image)
+        file_menu.add_command(label="Save Image", command=self.save_image)
+
+        self.canvas.bind("<B1-Motion>", self.draw_eraser)
+
+    def open_image(self):
+        file_path = tkinter.filedialog.askopenfilename(title="Select Image", parent=self.root)
+        if file_path:
+            self.image_path = file_path
+            self.image = Image.open(file_path).convert("RGBA")  # Convert to RGBA to add alpha channel
+            self.photo = ImageTk.PhotoImage(self.image)
+            self.canvas.config(scrollregion=self.canvas.bbox("all"))
+            self.canvas.create_image(0, 0, anchor=tk.NW, image=self.photo)
+
+            # Resize the window based on the loaded image size
+            self.root.geometry(f"{self.image.width}x{self.image.height}")
+
+            # Initialize drawing object
+            self.draw = ImageDraw.Draw(self.image)
+
+    def draw_eraser(self, event):
+        if self.draw:
+            x, y = event.x, event.y
+            radius = 20  # Adjust the radius of the eraser as needed
+
+            # Create an alpha mask with a transparent ellipse
+            alpha_mask = Image.new("L", self.image.size, 255)
+            draw_mask = ImageDraw.Draw(alpha_mask)
+            draw_mask.ellipse((x - radius, y - radius, x + radius, y + radius), fill=0)
+            # Keep track of transparency positions
+            self.transparency_positions.append((x, y, radius))
+
+            # Paste the alpha mask onto the current alpha channel only for the clicked spot
+            for pos in self.transparency_positions:
+                draw_mask.ellipse((pos[0] - pos[2], pos[1] - pos[2], pos[0] + pos[2], pos[1] + pos[2]), fill=0)
+                self.image.putalpha(alpha_mask)
+
+            # Update the displayed image on the canvas
+            self.photo = ImageTk.PhotoImage(self.image)
+            self.canvas.itemconfig(self.canvas.find_all(), image=self.photo)
+
+    def save_image(self):
+        if self.image_path:
+            # Open the save dialog on the top level
+            save_path = tkinter.filedialog.asksaveasfilename(defaultextension=".png", filetypes=[("PNG files", "*.png")], parent=self.root)
+            if save_path:
+                self.image.save(save_path)
 
 
 if __name__ == "__main__":
